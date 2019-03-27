@@ -3,7 +3,8 @@
 
 enum STATES{IDLE, ON_PRESS, ON_RELEASE};
 
-int intPins[2] = {2, 3};
+int intPins[2] = {9, 10};
+//int intPins[2] = {2, 3};
 volatile int prevStates[2] = {0, 0};
 volatile int button_states[2] = {IDLE, IDLE};
 
@@ -11,8 +12,15 @@ volatile int button_states[2] = {IDLE, IDLE};
 
 void enableButtonInterrupts()
 {
-  PCICR |= (1 <<PCIE2);
-  PCMSK2 |= ((1 << PCINT18) | (1 << PCINT19));
+  #if defined(__AVR_ATmega32U4__)
+    PCICR |= (1 << PCIE0);
+    PCMSK0 |= ((1 << PCINT5) | (1 << PCINT6));
+  #elif defined(__AVR_ATmega328P__) || defined(__AVR_ATmega168__)
+    PCICR |= (1 << PCIE0);
+    PCMSK0 |= ((1 << PCINT1) | (1 << PCINT2));
+  #else
+    #error "Button interrrupts only supported on atmega32u4 and atmega328p/128 based boards"
+  #endif
 }
 void resetButtonStates()
 {
@@ -28,7 +36,7 @@ void initButtonHandler()
     prevStates[i] = digitalRead(intPins[i]);
   }
 }
-ISR(PCINT2_vect)
+ISR(PCINT0_vect)
 {
   //Serial.println("Interrupt:");
   int states[2];

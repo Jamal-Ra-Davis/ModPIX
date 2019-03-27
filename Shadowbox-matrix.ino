@@ -110,9 +110,11 @@ void DrawOneFrame( byte startHue8, int8_t yHueDelta8, int8_t xHueDelta8)
 
 void setup() {
   cli();
-  PCICR |= (1 <<PCIE2);
-  PCMSK2 |= ((1 << PCINT18) | (1 << PCINT19));
-  //enableButtonInterrupts();
+  //PCICR |= (1 <<PCIE2);
+  //PCMSK2 |= ((1 << PCINT18) | (1 << PCINT19));
+  //PCICR |= (1 << PCIE0);
+  //  PCMSK2 |= ((1 << PCINT1) | (1 << PCINT2));
+  enableButtonInterrupts();
   sei();
   initButtonHandler();
   
