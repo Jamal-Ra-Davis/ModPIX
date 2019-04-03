@@ -1,6 +1,8 @@
 #ifndef BUTTON_HANDLER_LIB
 #define BUTTON_HANDLER_LIB
 
+#include "Events.h"
+
 enum STATES{IDLE, ON_PRESS, ON_RELEASE};
 
 int intPins[2] = {9, 10};
@@ -52,6 +54,8 @@ ISR(PCINT0_vect)
       {
         //On press (falling edge)
         button_states[i] = ON_PRESS;
+        eventBuffer.push(Event(Event::ON_PRESS, i));
+        //eventBuffer.push(3);
         Serial.print("Button ");
         Serial.print(i);
         Serial.println(": ON_PRESS");
@@ -61,6 +65,7 @@ ISR(PCINT0_vect)
       {
         //On release (rising edge)
         //button_states[i] = ON_RELEASE;
+        eventBuffer.push(Event(Event::ON_RELEASE, i));
         Serial.print("Button ");
         Serial.print(i);
         Serial.println(": ON_RELEASE");
@@ -71,20 +76,7 @@ ISR(PCINT0_vect)
   }
 }
 
-class EventQueue
-{
-  private:
-    static const int QUEUE_SIZE = 32;
-    int start, end;
-    int queue[QUEUE_SIZE];
-  public:
-    EventQueue();
-    int getQueueSize();
-    int popQueue();
-    void pushQueue();
-    int peekQueue();
-    int peekQueue(int idx);
-};
+
 
 
 #endif

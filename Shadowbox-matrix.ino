@@ -2,7 +2,7 @@
 #include "ButtonHandler.h"
 #include "Snake.h"
 #include "Helper.h"
-
+#include "Events.h"
 
 #define LED_PIN  11
 
@@ -10,10 +10,11 @@
 #define CHIPSET     WS2811
 
 #define BRIGHTNESS 128
-
-
-
 #define NUM_LEDS (kMatrixWidth * kMatrixHeight)
+
+
+
+
 CRGB leds_plus_safety_pixel[ NUM_LEDS + 1];
 CRGB* const leds( leds_plus_safety_pixel + 1);
 
