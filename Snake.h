@@ -4,6 +4,7 @@
 #include <FastLED.h>
 #include "Helper.h"
 #include "ButtonHandler.h"
+#include "Events.h"
 #define GAME_WIDTH kMatrixWidth
 #define GAME_HEIGHT kMatrixHeight
 #define WRAP false
@@ -64,6 +65,9 @@ class Snake
     void update();
     void draw(CRGB* const leds);
     bool game_over() {return end_game;}
+    int handleOnPress(Event e, int dir_);
+    int handleOnRelease(Event e, int dir_);
+    
 };
 
 
@@ -114,7 +118,7 @@ void Snake::update()
   SnakeNode next = body[0];
 
 
-  
+  /*
   if (button_states[0] == ON_PRESS || button_states[0] == ON_RELEASE)
   {
     //Turn left
@@ -130,6 +134,30 @@ void Snake::update()
       dir = 0;
   }
   resetButtonStates();
+  */
+  int dir_ = dir;
+  while (!eventBuffer.isEmpty())
+  {
+    Event e;
+    if (!eventBuffer.lockedPop(e))
+    {
+      //Handle some error condition
+    }
+    
+    switch (e.type)
+    {
+      case Event::ON_PRESS:
+      {
+        handleOnPress(e, dir_);
+        break;
+      }
+      case Event::ON_RELEASE:
+      {
+        handleOnRelease(e, dir_);
+        break;
+      }
+    }
+  }
 
   
   switch(dir)
@@ -229,5 +257,25 @@ void Snake::draw(CRGB* const leds)
   //Serial.println("Exit Draw");
 }
 
+int Snake::handleOnPress(Event e, int dir_)
+{
+  if (e.button_idx == 0)
+  {
+    dir = dir_-1;
+    if (dir < 0)
+      dir = NUM_DIR - 1;
+  }
+  else if (e.button_idx == 1)
+  {
+    dir = dir_ + 1;
+    if (dir >= NUM_DIR)
+      dir = 0;
+  }
+  return 0;
+}
+int Snake::handleOnRelease(Event e, int dir_)
+{
+  return 0;
+}
 
 #endif

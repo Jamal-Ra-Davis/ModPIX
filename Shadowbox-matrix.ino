@@ -4,7 +4,7 @@
 #include "Helper.h"
 #include "Events.h"
 
-#define LED_PIN  11
+#define LED_PIN  A0
 
 #define COLOR_ORDER GRB
 #define CHIPSET     WS2811
@@ -53,8 +53,10 @@ void loop()
   
     //Serial.println("In Loop");
     //delay(200);
-  
+
+    serialParser();
     snake->update();
+    eventBuffer.clear();
     if (snake->game_over())
     {
       snake->reset();
@@ -62,6 +64,8 @@ void loop()
       Serial.println("Snake reset");
     }
     snake->draw(leds);
+
+    
     int del = 250 - delay_diff;
     if (del < 10)
       del = 10;
@@ -120,6 +124,7 @@ void setup() {
   initButtonHandler();
   
   Serial.begin(9600);
+  Serial.setTimeout(5);
   delay(2000);
   //while(1)
   //{
@@ -128,8 +133,6 @@ void setup() {
   //}
   FastLED.addLeds<CHIPSET, LED_PIN, COLOR_ORDER>(leds, NUM_LEDS).setCorrection(TypicalSMD5050);
   FastLED.setBrightness( BRIGHTNESS );
-
-  
 
 
   Serial.println("Init leds");
@@ -141,3 +144,22 @@ void setup() {
   FastLED.clear();
   FastLED.show();
 }
+
+void serialParser()
+{
+  while (Serial.available() > 0)
+  {
+    char c = Serial.read();
+    int idx = Serial.parseInt();
+    if (Serial.read() == '\n')
+    {
+      if (c == 'p')
+        eventBuffer.lockedPush(Event(Event::ON_PRESS, idx));   
+      else if (c == 'r')
+        eventBuffer.lockedPush(Event(Event::ON_RELEASE, idx));
+    }
+  }
+}
+
+
+
