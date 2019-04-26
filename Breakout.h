@@ -23,6 +23,8 @@ class Breakout
     int ball_pos_x, ball_pos_y;
     int ball_vel_x, ball_vel_y;
 
+    int ball_trail[3][2];
+
     bool end_game;
     bool press_left, press_right;
     bool on_press_left, on_press_right;
@@ -73,6 +75,13 @@ void Breakout::reset()
     Serial.print("]: ");
     Serial.println(row_colors[i], HEX);
   }
+
+  for (int i=0; i<3; i++)
+  {
+    ball_trail[i][0] = ball_pos_x;
+    ball_trail[i][1] = ball_pos_y;
+  }
+  
   //row_colors[0] = 0x0000FF;
   //row_colors[1] = 0x00FF00;
   //row_colors[2] = 0xFF0000;
@@ -110,10 +119,10 @@ void Breakout::update()
     }
   }
 
-  Serial.print("press_left: ");
-  Serial.println(press_left);
-  Serial.print("press_right: ");
-  Serial.println(press_right);
+  //Serial.print("press_left: ");
+  //Serial.println(press_left);
+  //Serial.print("press_right: ");
+  //Serial.println(press_right);
 
   //Determine paddle vel
   int paddle_vel = 0;
@@ -151,6 +160,22 @@ void Breakout::update()
 
   if (cnt % 2 == 0)
     return;
+
+
+  for (int i=(3-1); i>=0; i--)
+  {
+    if (i==0)
+    {
+      ball_trail[i][0] = ball_pos_x;
+      ball_trail[i][1] = ball_pos_y;
+    }
+    else
+    {
+      ball_trail[i][0] = ball_trail[i-1][0];
+      ball_trail[i][1] = ball_trail[i-1][1];
+    }
+  }
+    
   //Update ball pos
   ball_pos_x += ball_vel_x;
   ball_pos_y += ball_vel_y;
@@ -215,6 +240,8 @@ void Breakout::update()
 void Breakout::draw(CRGB* const leds)
 {
   FastLED.clear();
+
+  //Draw Blocks
   for (int i=0; i<N_ROWS; i++)
   {
     for (int j=0; j<8; j++)
@@ -223,12 +250,28 @@ void Breakout::draw(CRGB* const leds)
         leds[XY(j, i)] = row_colors[i];
     }
   }
-  
+
+  //Draw Paddle
   for (int i=0; i<PADDLE_WIDTH; i++)
   {
     leds[XY(i+paddle_x, paddle_y)] = 0xFFFFFF;
   }
-  leds[XY(ball_pos_x, ball_pos_y)] = 0xFF00FF;
+
+  //Draw Ball Trail
+  uint8_t ball_r = 0xFF; 
+  uint8_t ball_g = 0x00;
+  uint8_t ball_b = 0xFF;
+
+  for (int i=(3-1); i>=0; i--)
+  {
+    uint8_t r = ball_r >> (i+1);
+    uint8_t g = ball_g >> (i+1);
+    uint8_t b = ball_b >> (i+1);
+    leds[XY(ball_trail[i][0], ball_trail[i][0])] = (r << 16) | (g << 8) | b;
+  }
+
+  //Draw Ball
+  leds[XY(ball_pos_x, ball_pos_y)] = (ball_r << 16) | (ball_g << 8) | (ball_b);//0xFF00FF;
   FastLED.show();
 }
 
