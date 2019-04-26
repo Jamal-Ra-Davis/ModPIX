@@ -3,6 +3,7 @@
 #include "Snake.h"
 #include "Helper.h"
 #include "Events.h"
+#include "Breakout.h"
 
 #define LED_PIN  A0
 
@@ -18,8 +19,8 @@
 CRGB leds_plus_safety_pixel[ NUM_LEDS + 1];
 CRGB* const leds( leds_plus_safety_pixel + 1);
 
-Snake* snake = NULL;
-
+//Snake* snake = NULL;
+Breakout* snake = NULL;
 
 // Demo that USES "XY" follows code below
 
@@ -67,8 +68,8 @@ void loop()
 
     
     int del = 250 - delay_diff;
-    if (del < 10)
-      del = 10;
+    if (del < 30)
+      del = 30;
     delay_diff++;
     delay(del);
     return;
@@ -125,11 +126,11 @@ void setup() {
   
   Serial.begin(9600);
   Serial.setTimeout(5);
-  delay(2000);
+  //delay(2000);
   //while(1)
   //{
     Serial.println("Starting up");
-    delay(200);
+  //  delay(200);
   //}
   FastLED.addLeds<CHIPSET, LED_PIN, COLOR_ORDER>(leds, NUM_LEDS).setCorrection(TypicalSMD5050);
   FastLED.setBrightness( BRIGHTNESS );
@@ -137,7 +138,8 @@ void setup() {
 
   Serial.println("Init leds");
 
-  snake = new Snake();
+  //snake = new Snake();
+  snake = new Breakout();
   snake->reset();
   snake->draw(leds);
   delay(250);

@@ -1,5 +1,5 @@
 #ifndef SNAKE_LIB
-#define SNAKE_LIN
+#define SNAKE_LIB
 #include <Arduino.h>
 #include <FastLED.h>
 #include "Helper.h"
