@@ -66,12 +66,14 @@ void loop()
     }
     snake->draw(leds);
 
-    
+    /*
     int del = 250 - delay_diff;
     if (del < 30)
       del = 30;
     delay_diff++;
     delay(del);
+    */
+    delay(40);
     return;
 
     

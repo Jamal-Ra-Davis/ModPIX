@@ -29,6 +29,8 @@ class Breakout
     bool press_left, press_right;
     bool on_press_left, on_press_right;
 
+    bool checkBlockCollision();
+
   public:
 
     Breakout();
@@ -202,7 +204,7 @@ void Breakout::update()
     ball_pos_y = GAME_HEIGHT-2;
   }
 
-
+  //Handle paddle collisions
   for (int i=0; i<PADDLE_WIDTH; i++)
   {
     if (ball_pos_x == (paddle_x + i) && ball_pos_y == paddle_y)
@@ -232,7 +234,91 @@ void Breakout::update()
         ball_vel_y *= -1;
       }
     }
-    
+  }
+
+
+  //Handle block Collisions
+  bool check = checkBlockCollision();
+  if (check)
+  {
+    int prev_x = ball_trail[0][0];
+    int prev_y = ball_trail[0][1];
+
+    //hits in corner group from right
+    if ((prev_y < N_ROWS)&& (blocks[ball_pos_y] & (1 << prev_x)) && (blocks[prev_y] & (1 << ball_pos_x)))
+    {
+      blocks[ball_pos_y] &= ~(1 << ball_pos_x);
+      blocks[prev_y] &= ~(1 << ball_pos_x);
+      blocks[ball_pos_y] &= ~(1 << prev_x);
+
+      if (ball_vel_x > 0)
+        ball_pos_x -= 2;
+      else
+        ball_pos_x += 2;
+
+      if (ball_vel_y > 0)
+        ball_pos_y -= 2;
+      else
+        ball_pos_y += 2;
+      
+      ball_vel_y *= -1;
+      ball_vel_x *= -1;
+      
+      Serial.println("In First");
+    }
+    //Hits flat on
+    else if ((ball_pos_y < N_ROWS) && (blocks[ball_pos_y] & (1 << prev_x)))
+    {
+      blocks[ball_pos_y] &= ~(1 << prev_x);
+      ball_vel_y *= -1;
+      ball_pos_y += 2;
+
+      Serial.println("In Second");
+    }
+    //hits in corner group from left
+    else// if (false)
+    {
+      Serial.print("In 3rd: ");
+      Serial.println(check);
+      Serial.print("(x, y): (");
+      Serial.print(ball_pos_x);
+      Serial.print(",");
+      Serial.print(ball_pos_y);
+      Serial.println(")");
+      Serial.println(blocks[ball_pos_y], BIN);
+      Serial.println(checkBlockCollision());
+
+
+      
+      blocks[ball_pos_y] &= ~(1 << ball_pos_x);
+
+      if (ball_vel_x > 0)
+        ball_pos_x -= 2;
+      else
+        ball_pos_x += 2;
+
+      if (ball_vel_y > 0)
+        ball_pos_y -= 2;
+      else
+        ball_pos_y += 2;
+
+      ball_vel_x *= -1;
+      ball_vel_y *= -1;
+
+     
+    }
+    /*
+    //hits single from right
+    else if(false)
+    {
+      
+    }
+    //hits single from left
+    else if(false)
+    {
+      
+    }
+    */
   }
   
 }
@@ -240,6 +326,26 @@ void Breakout::update()
 void Breakout::draw(CRGB* const leds)
 {
   FastLED.clear();
+
+  
+  //Draw Paddle
+  for (int i=0; i<PADDLE_WIDTH; i++)
+  {
+    leds[XY(i+paddle_x, paddle_y)] = 0xFFFFFF;
+  }
+
+  //Draw Ball Trail
+  uint32_t ball_r = 0xFF; 
+  uint32_t ball_g = 0x00;
+  uint32_t ball_b = 0xFF;
+
+  for (int i=(3-1); i>=0; i--)
+  {
+    uint32_t r = ball_r >> (i+2);
+    uint32_t g = ball_g >> (i+2);
+    uint32_t b = ball_b >> (i+2);
+    leds[XY(ball_trail[i][0], ball_trail[i][1])] = (r << 16) | (g << 8) | b;
+  }
 
   //Draw Blocks
   for (int i=0; i<N_ROWS; i++)
@@ -251,24 +357,6 @@ void Breakout::draw(CRGB* const leds)
     }
   }
 
-  //Draw Paddle
-  for (int i=0; i<PADDLE_WIDTH; i++)
-  {
-    leds[XY(i+paddle_x, paddle_y)] = 0xFFFFFF;
-  }
-
-  //Draw Ball Trail
-  uint8_t ball_r = 0xFF; 
-  uint8_t ball_g = 0x00;
-  uint8_t ball_b = 0xFF;
-
-  for (int i=(3-1); i>=0; i--)
-  {
-    uint8_t r = ball_r >> (i+1);
-    uint8_t g = ball_g >> (i+1);
-    uint8_t b = ball_b >> (i+1);
-    leds[XY(ball_trail[i][0], ball_trail[i][0])] = (r << 16) | (g << 8) | b;
-  }
 
   //Draw Ball
   leds[XY(ball_pos_x, ball_pos_y)] = (ball_r << 16) | (ball_g << 8) | (ball_b);//0xFF00FF;
@@ -301,4 +389,14 @@ int Breakout::handleOnRelease(Event e)
   }
   return 0;
 }
+bool Breakout::checkBlockCollision()
+{
+  if (ball_pos_y >= N_ROWS)
+    return false;
+  if (blocks[ball_pos_y] & (1 << ball_pos_x))
+    return true;
+  return false;
+}
+
+
 #endif
